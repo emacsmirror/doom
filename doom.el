@@ -253,31 +253,20 @@ matches all tags."
 ;; All functions defined for nodes are defined for documents, elements
 ;; and attributes as well. Generator function.
 
-;; TODO: This should really be a macro.
-;; Like, really.
-(defun doom-node-defun (func)
-  "Define aliases for symbol FUNC.
-FUNC must have the form doom-node-foo.  The aliases created will be named
-doom-document-foo, doom-element-foo, and doom-attr-foo."
-  (if (and (fboundp func)
-	   (string-match "^doom-node-" (symbol-name func)))
-      (let ((method (substring (symbol-name func) 9)))
-	(mapc (lambda (prefix)
-		(defalias
-		  (intern (concat prefix method)) func))
-	      '("doom-document-" "doom-element-" "doom-attr-")))
-    (error "%S is not a dom function" func)))
-
 ;; The following functions implement the virtual attributes first-child,
 ;; last-child, previous-sibling and next-sibling.
 
 (defun doom-node-first-child (node)
   (car (doom-node-child-nodes node)))
-(doom-node-defun 'doom-node-first-child)
+(defalias 'doom-docment-first-child 'doom-node-first-child)
+(defalias 'doom-element-first-child 'doom-node-first-child)
+(defalias 'doom-attr-first-child    'doom-node-first-child)
 
 (defun doom-node-last-child (node)
   (car (last (doom-node-child-nodes node))))
-(doom-node-defun 'doom-node-last-child)
+(defalias 'doom-docment-last-child 'doom-node-last-child)
+(defalias 'doom-element-last-child 'doom-node-last-child)
+(defalias 'doom-attr-last-child    'doom-node-last-child)
 
 (defun doom-node-previous-sibling (node)
   (let ((parent (doom-node-parent-node node)))
@@ -291,13 +280,17 @@ doom-document-foo, doom-element-foo, and doom-attr-foo."
 	    (setq prev (car list)
 		  list (cdr list))))
 	prev))))
-(doom-node-defun 'doom-node-previous-sibling)
+(defalias 'doom-docment-previous-sibling 'doom-node-previous-sibling)
+(defalias 'doom-element-previous-sibling 'doom-node-previous-sibling)
+(defalias 'doom-attr-previous-sibling    'doom-node-previous-sibling)
 
 (defun doom-node-next-sibling (node)
   (let ((parent (doom-node-parent-node node)))
     (when parent
       (nth 1 (memq node (doom-node-child-nodes parent))))))
-(doom-node-defun 'doom-node-next-sibling)
+(defalias 'doom-docment-next-sibling 'doom-node-next-sibling)
+(defalias 'doom-element-next-sibling 'doom-node-next-sibling)
+(defalias 'doom-attr-next-sibling    'doom-node-next-sibling)
 
 ;; append-child
 
@@ -321,7 +314,10 @@ Return the node added."
     (setf (doom-node-child-nodes node) (nconc children (list new-child))))
   (setf (doom-node-parent-node new-child) node)
   new-child)
-(doom-node-defun 'doom-node-append-child)
+(defalias 'doom-docment-append-child 'doom-node-append-child)
+(defalias 'doom-element-append-child 'doom-node-append-child)
+(defalias 'doom-attr-append-child    'doom-node-append-child)
+
 
 ;; cloneNode
 
@@ -400,7 +396,9 @@ subtree under the specified node; if false, clone only the node itself
 		    ((doom-element-next-sibling copy))
 		    (t (pop stack))))))
     first-copy))
-(doom-node-defun 'doom-node-clone-node)
+(defalias 'doom-docment-clone-node 'doom-node-clone-node)
+(defalias 'doom-element-clone-node 'doom-node-clone-node)
+(defalias 'doom-attr-clone-node    'doom-node-clone-node)
 
 ;; hasAttributes introduced in DOM Level 2
 
@@ -410,7 +408,9 @@ subtree under the specified node; if false, clone only the node itself
 (defun doom-node-has-attributes (node)
   "Return t when NODE has any attributes."
   (not (null (doom-node-attributes node))))
-(doom-node-defun 'doom-node-has-attributes)
+(defalias 'doom-docment-has-attributes 'doom-node-has-attributes)
+(defalias 'doom-element-has-attributes 'doom-node-has-attributes)
+(defalias 'doom-attr-has-attributes    'doom-node-has-attributes)
 
 ;; hasChildNodes
 
@@ -419,7 +419,9 @@ subtree under the specified node; if false, clone only the node itself
 (defun doom-node-has-child-nodes (node)
   "Return t when NODE has any child nodes."
   (not (null (doom-node-child-nodes node))))
-(doom-node-defun 'doom-node-has-child-nodes)
+(defalias 'doom-docment-has-child-nodes 'doom-node-has-child-nodes)
+(defalias 'doom-element-has-child-nodes 'doom-node-has-child-nodes)
+(defalias 'doom-attr-has-child-nodes    'doom-node-has-child-nodes)
 
 ;; insertBefore
 
@@ -461,7 +463,9 @@ Return the node added."
       (unless done
 	(doom-exception 'doom-not-found-err)))
     new-child))
-(doom-node-defun 'doom-node-insert-before)
+(defalias 'doom-docment-insert-before 'doom-node-insert-before)
+(defalias 'doom-element-insert-before 'doom-node-insert-before)
+(defalias 'doom-attr-insert-before    'doom-node-insert-before)
 
 ;; removeChild
 
@@ -478,7 +482,9 @@ raise an exception if OLD-CHILD is NODE's child."
 	      (doom-node-parent-node old-child) nil)
       (doom-exception 'doom-not-found-err))
     old-child))
-(doom-node-defun 'doom-node-remove-child)
+(defalias 'doom-docment-remove-child 'doom-node-remove-child)
+(defalias 'doom-element-remove-child 'doom-node-remove-child)
+(defalias 'doom-attr-remove-child    'doom-node-remove-child)
 
 ;; replaceChild
 
@@ -504,7 +510,9 @@ Return OLD-CHILD."
   ;; set parent of new-child and old-child
   (setf (doom-node-parent-node old-child) nil
 	(doom-node-parent-node new-child) node))
-(doom-node-defun 'doom-node-replace-child)
+(defalias 'doom-docment-replace-child 'doom-node-replace-child)
+(defalias 'doom-element-replace-child 'doom-node-replace-child)
+(defalias 'doom-attr-replace-child    'doom-node-replace-child)
 
 ;; textContent of type DOOMString, introduced in DOM Level 3
 
@@ -529,7 +537,9 @@ If NODE is an attribute or a text node, its value is returned."
 	   (mapcar 'doom-node-value
 		   (doom-element-get-elements-by-tag-name
 		    node doom-text-node-name)))))
-(doom-node-defun 'doom-node-text-content)
+(defalias 'doom-docment-text-content 'doom-node-text-content)
+(defalias 'doom-element-text-content 'doom-node-text-content)
+(defalias 'doom-attr-text-content    'doom-node-text-content)
 
 (defun doom-node-set-text-content (node data)
   "Set the text content of NODE, replacing all its children.
@@ -541,7 +551,9 @@ If NODE is an attribute or a text node, its value is set."
 	  (list (doom-document-create-text-node
 		 (doom-node-owner-document node)
 		 data)))))
-(doom-node-defun 'doom-node-set-text-content)
+(defalias 'doom-docment-set-text-content 'doom-node-set-text-content)
+(defalias 'doom-element-set-text-content 'doom-node-set-text-content)
+(defalias 'doom-attr-set-text-content    'doom-node-set-text-content)
 
 (defsetf doom-node-text-content doom-node-set-text-content)
 
