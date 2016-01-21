@@ -6,7 +6,7 @@
 ;;	Henrik.Motakef <elisp@henrik-motakef.de>
 ;;      Katherine Whitlock <toroidal-code@gmail.com>
 ;; Maintainer: Katherine Whitlock
-;; Version: 1.2
+;; Version: 1.3
 ;; Keywords: xml, doom
 ;; Package-Requires: ((cl-lib "0.5"))
 ;; URL: http://www.github.com/toroidal-code/doom.el/
