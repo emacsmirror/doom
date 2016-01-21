@@ -57,10 +57,30 @@
 ;; share the same prefix.
 
 ;;; Code:
+
 (eval-when-compile
   (require 'cl-lib)
   (require 'cl))
 (require 'xml)
+
+;; FIXME: Use symbols instead of numbers?
+(defconst doom-element-node 1)
+(defconst doom-attribute-node 2)
+(defconst doom-text-node 3)
+;; (defconst doom-cdata-section-node 4)
+;; (defconst doom-entity-reference-node 5)
+;; (defconst doom-entity-node 6)
+;; (defconst doom-processing-instruction-node 7)
+;; (defconst doom-comment-node 8)
+(defconst doom-document-node 9)
+;; (defconst doom-document-type-node 10)
+;; (defconst doom-document-fragment-node 11)
+;; (defconst doom-notation-node 12)
+
+;; Default names used for Text and Document nodes.
+
+(defconst doom-text-node-name '\#text)
+(defconst doom-document-node-name '\#document)
 
 ;;; Exception DOMException
 
@@ -193,25 +213,6 @@ matches all tags."
 ;; attributes for a Comment), this returns null. Note that the
 ;; specialized interfaces may contain additional and more convenient
 ;; mechanisms to get and set the relevant information.
-
-;; FIXME: Use symbols instead of numbers?
-(defconst doom-element-node 1)
-(defconst doom-attribute-node 2)
-(defconst doom-text-node 3)
-; (defconst doom-cdata-section-node 4)
-; (defconst doom-entity-reference-node 5)
-; (defconst doom-entity-node 6)
-; (defconst doom-processing-instruction-node 7)
-; (defconst doom-comment-node 8)
-(defconst doom-document-node 9)
-; (defconst doom-document-type-node 10)
-; (defconst doom-document-fragment-node 11)
-; (defconst doom-notation-node 12)
-
-;; Default names used for Text and Document nodes.
-
-(defconst doom-text-node-name '\#text)
-(defconst doom-document-node-name '\#document)
 
 ;; readonly attribute DOOMString        nodeName;
 ;;          attribute DOOMString        nodeValue;
