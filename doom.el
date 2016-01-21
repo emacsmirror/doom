@@ -1,4 +1,4 @@
-;;; dom.el --- DOM implementation and manipulation library
+;;; doom.el --- DOM implementation and manipulation library
 
 ;; Copyright (C) 2001  Alex Schroeder <alex@gnu.org>
 
@@ -7,9 +7,9 @@
 ;;      Katherine Whitlock <toroidal-code@gmail.com>
 ;; Maintainer: Katherine Whitlock
 ;; Version: 1.2
-;; Keywords: xml, dom
+;; Keywords: xml, doom
 ;; Package-Requires: ((cl-lib "0.5"))
-;; URL: http://www.github.com/toroidal-code/dom.el/
+;; URL: http://www.github.com/toroidal-code/doom.el/
 
 ;; This file is not part of GNU Emacs.
 
@@ -43,17 +43,17 @@
 ;;
 ;; If you want a more elaborate data structure to work with your XML
 ;; document, you can create a document object model (DOM) from the XML
-;; data structure using dom.el.
+;; data structure using doom.el.
 ;;
-;; You can create a DOM from XML using `dom-make-document-from-xml'
+;; You can create a DOM from XML using `doom-make-document-from-xml'
 ;; with the input from `libxml-parse-xml-region'. See function documentation
 ;; below for an example
 
 ;;; On Interfaces and Classes
 
-;; The elisp DOM implementation uses the dom-node structure to store all
+;; The elisp DOM implementation uses the doom-node structure to store all
 ;; attributes.  The various interfaces consist of sets of functions to
-;; manipulate these dom-nodes.  The functions of a certain interface
+;; manipulate these doom-nodes.  The functions of a certain interface
 ;; share the same prefix.
 
 ;;; Code:
@@ -83,23 +83,23 @@
 
 (let ((errors
        ;; Note that the numeric code is not used at the moment.
-       '((dom-hierarchy-request-err 3
+       '((doom-hierarchy-request-err 3
 	  "Node doesn't belong here")
-	 (dom-wrong-document-err 4
+	 (doom-wrong-document-err 4
 	  "Node is used in a different document than the one that created it")
-	 (dom-not-found-err 8
+	 (doom-not-found-err 8
 	  "A reference to a node was made in a context where it does not exist"))))
   (dolist (err errors)
     (put (nth 0 err)
 	 'error-conditions
-	 (list 'error 'dom-exception (nth 0 err)))
+	 (list 'error 'doom-exception (nth 0 err)))
     (put (nth 0 err)
 	 'error-message
 	 (nth 2 err))))
 
-(defun dom-exception (exception &rest data)
+(defun doom-exception (exception &rest data)
   "Signal error EXCEPTION, possibly providing DATA.
-The error signaled has the condition 'dom-exception in addition
+The error signaled has the condition 'doom-exception in addition
 to the catch-all 'error and EXCEPTION itself."
   ;; FIXME: Redefine this to do something else?
   (signal exception data))
@@ -118,23 +118,23 @@ to the catch-all 'error and EXCEPTION itself."
 
 ;; It should also be noted that the Document interface has accessors
 ;; directly derived from the Node interface, only with the prefix
-;; `dom-document` instead of `dom node`. There is also an added field
+;; `doom-document` instead of `dom node`. There is also an added field
 ;; `element` which denotes the root element of the document.
 
 
-(defun dom-document-create-attribute (doc name)
+(defun doom-document-create-attribute (doc name)
   "Create an attribute of the given NAME.
 DOC is the owner-document. This can then be added
-to an element using the dom-node-attributes accesssor"
+to an element using the doom-node-attributes accesssor"
   (when (stringp name)
     (setq name (intern name)))
-  (make-dom-attr
+  (make-doom-attr
    :name name
-   :type dom-attribute-node
+   :type doom-attribute-node
    :owner-document doc))
 
 
-(defun dom-document-create-element (doc type)
+(defun doom-document-create-element (doc type)
   "Create an element of the given TYPE.
 TYPE will be interned, if it is a string.
 DOC is the owner-document. Returns an ELEMENT"
@@ -144,22 +144,22 @@ DOC is the owner-document. Returns an ELEMENT"
 ;; and attached to the element.
   (when (stringp type)
     (setq type (intern type)))
-  (make-dom-element
+  (make-doom-element
    :name type
-   :type dom-element-node
+   :type doom-element-node
    :owner-document doc))
 
 ;; createTextNode
 
 ;; Creates a Text node given the specified string.
 
-(defun dom-document-create-text-node (doc data)
+(defun doom-document-create-text-node (doc data)
   "Create a text element containing DATA.
 DOC is the owner-document."
-  (make-dom-text
-   :name dom-text-node-name
+  (make-doom-text
+   :name doom-text-node-name
    :value data
-   :type dom-text-node
+   :type doom-text-node
    :owner-document doc))
 
 ;; getElementsByTagName
@@ -168,13 +168,13 @@ DOC is the owner-document."
 ;; order in which they are encountered in a preorder traversal of the
 ;; Document tree.
 
-(defun dom-document-get-elements-by-tag-name (doc tagname)
+(defun doom-document-get-elements-by-tag-name (doc tagname)
   "Return a list of all the elements with the given tagname.
 The elements are returned in the order in which they are encountered in
 a preorder traversal of the document tree.  The special value \"*\"
 matches all tags."
-  (dom-element-get-elements-by-tag-name-1
-   (dom-document-element doc)
+  (doom-element-get-elements-by-tag-name-1
+   (doom-document-element doc)
    tagname))
 
 ;;; Interface Node
@@ -184,7 +184,7 @@ matches all tags."
 ;; all objects implementing the Node interface expose methods for dealing
 ;; with children, not all objects implementing the Node interface may have
 ;; children. For example, Text nodes may not have children, and adding
-;; children to such nodes results in a DOMException being raised.
+;; children to such nodes results in a DOOMException being raised.
 
 ;; The attributes name, value and attributes are included as a mechanism
 ;; to get at node information without casting down to the specific
@@ -195,26 +195,26 @@ matches all tags."
 ;; mechanisms to get and set the relevant information.
 
 ;; FIXME: Use symbols instead of numbers?
-(defconst dom-element-node 1)
-(defconst dom-attribute-node 2)
-(defconst dom-text-node 3)
-; (defconst dom-cdata-section-node 4)
-; (defconst dom-entity-reference-node 5)
-; (defconst dom-entity-node 6)
-; (defconst dom-processing-instruction-node 7)
-; (defconst dom-comment-node 8)
-(defconst dom-document-node 9)
-; (defconst dom-document-type-node 10)
-; (defconst dom-document-fragment-node 11)
-; (defconst dom-notation-node 12)
+(defconst doom-element-node 1)
+(defconst doom-attribute-node 2)
+(defconst doom-text-node 3)
+; (defconst doom-cdata-section-node 4)
+; (defconst doom-entity-reference-node 5)
+; (defconst doom-entity-node 6)
+; (defconst doom-processing-instruction-node 7)
+; (defconst doom-comment-node 8)
+(defconst doom-document-node 9)
+; (defconst doom-document-type-node 10)
+; (defconst doom-document-fragment-node 11)
+; (defconst doom-notation-node 12)
 
 ;; Default names used for Text and Document nodes.
 
-(defconst dom-text-node-name '\#text)
-(defconst dom-document-node-name '\#document)
+(defconst doom-text-node-name '\#text)
+(defconst doom-document-node-name '\#document)
 
-;; readonly attribute DOMString        nodeName;
-;;          attribute DOMString        nodeValue;
+;; readonly attribute DOOMString        nodeName;
+;;          attribute DOOMString        nodeValue;
 ;; readonly attribute unsigned short   nodeType;
 ;; readonly attribute Node             parentNode;
 ;; readonly attribute NodeList         childNodes;
@@ -225,7 +225,7 @@ matches all tags."
 ;; readonly attribute NamedNodeMap     attributes;
 ;; readonly attribute Document         ownerDocument;
 
-(cl-defstruct dom-node
+(cl-defstruct doom-node
   (name nil :read-only t)
   value
   (type nil :read-only t)
@@ -234,18 +234,18 @@ matches all tags."
   attributes
   owner-document)
 
-(cl-defstruct (dom-document (:include dom-node))
+(cl-defstruct (doom-document (:include doom-node))
   element)
 
-(cl-defstruct (dom-element (:include dom-node)))
+(cl-defstruct (doom-element (:include doom-node)))
 
-(cl-defstruct (dom-attr (:include dom-node))
+(cl-defstruct (doom-attr (:include doom-node))
   owner-element
   specified)
 
-(cl-defstruct (dom-character-data (:include dom-node)))
+(cl-defstruct (doom-character-data (:include doom-node)))
 
-(cl-defstruct (dom-text (:include dom-character-data)))
+(cl-defstruct (doom-text (:include doom-character-data)))
 
 
 
@@ -254,34 +254,34 @@ matches all tags."
 
 ;; TODO: This should really be a macro.
 ;; Like, really.
-(defun dom-node-defun (func)
+(defun doom-node-defun (func)
   "Define aliases for symbol FUNC.
-FUNC must have the form dom-node-foo.  The aliases created will be named
-dom-document-foo, dom-element-foo, and dom-attr-foo."
+FUNC must have the form doom-node-foo.  The aliases created will be named
+doom-document-foo, doom-element-foo, and doom-attr-foo."
   (if (and (fboundp func)
-	   (string-match "^dom-node-" (symbol-name func)))
+	   (string-match "^doom-node-" (symbol-name func)))
       (let ((method (substring (symbol-name func) 9)))
 	(mapc (lambda (prefix)
 		(defalias
 		  (intern (concat prefix method)) func))
-	      '("dom-document-" "dom-element-" "dom-attr-")))
+	      '("doom-document-" "doom-element-" "doom-attr-")))
     (error "%S is not a dom function" func)))
 
 ;; The following functions implement the virtual attributes first-child,
 ;; last-child, previous-sibling and next-sibling.
 
-(defun dom-node-first-child (node)
-  (car (dom-node-child-nodes node)))
-(dom-node-defun 'dom-node-first-child)
+(defun doom-node-first-child (node)
+  (car (doom-node-child-nodes node)))
+(doom-node-defun 'doom-node-first-child)
 
-(defun dom-node-last-child (node)
-  (car (last (dom-node-child-nodes node))))
-(dom-node-defun 'dom-node-last-child)
+(defun doom-node-last-child (node)
+  (car (last (doom-node-child-nodes node))))
+(doom-node-defun 'doom-node-last-child)
 
-(defun dom-node-previous-sibling (node)
-  (let ((parent (dom-node-parent-node node)))
+(defun doom-node-previous-sibling (node)
+  (let ((parent (doom-node-parent-node node)))
     (when parent
-      (let ((list (dom-node-child-nodes parent))
+      (let ((list (doom-node-child-nodes parent))
 	    prev
 	    done)
 	(while (and (not done) list)
@@ -290,13 +290,13 @@ dom-document-foo, dom-element-foo, and dom-attr-foo."
 	    (setq prev (car list)
 		  list (cdr list))))
 	prev))))
-(dom-node-defun 'dom-node-previous-sibling)
+(doom-node-defun 'doom-node-previous-sibling)
 
-(defun dom-node-next-sibling (node)
-  (let ((parent (dom-node-parent-node node)))
+(defun doom-node-next-sibling (node)
+  (let ((parent (doom-node-parent-node node)))
     (when parent
-      (nth 1 (memq node (dom-node-child-nodes parent))))))
-(dom-node-defun 'dom-node-next-sibling)
+      (nth 1 (memq node (doom-node-child-nodes parent))))))
+(doom-node-defun 'doom-node-next-sibling)
 
 ;; append-child
 
@@ -308,19 +308,19 @@ dom-document-foo, dom-element-foo, and dom-attr-foo."
 ;; object, the entire contents of the document fragment are moved into
 ;; the child list of this node
 
-(defun dom-node-append-child (node new-child)
+(defun doom-node-append-child (node new-child)
   "Adds NEW-CHILD to the end of the list of children of NODE.
 If NEW-CHILD is already in the document tree, it is first removed.
 NEW-CHILD will be removed from anywhere in the document!
 Return the node added."
-  (dom-node-test-new-child node new-child)
-  (dom-node-unlink-child-from-parent new-child)
+  (doom-node-test-new-child node new-child)
+  (doom-node-unlink-child-from-parent new-child)
   ;; add new-child at the end of the list
-  (let ((children (dom-node-child-nodes node)))
-    (setf (dom-node-child-nodes node) (nconc children (list new-child))))
-  (setf (dom-node-parent-node new-child) node)
+  (let ((children (doom-node-child-nodes node)))
+    (setf (doom-node-child-nodes node) (nconc children (list new-child))))
+  (setf (doom-node-parent-node new-child) node)
   new-child)
-(dom-node-defun 'dom-node-append-child)
+(doom-node-defun 'doom-node-append-child)
 
 ;; cloneNode
 
@@ -346,7 +346,7 @@ Return the node added."
 ;; FIXME: The specification says nothing about nextSibling and
 ;; previousSibling.  We set these to nil as well, matching parentNode.
 
-(defun dom-node-clone-node (node &optional deep)
+(defun doom-node-clone-node (node &optional deep)
   "Return a duplicate of NODE.
 The duplicate node has no parent.  Cloning will copy all attributes and
 their values, but this method does not copy any text it contains unless
@@ -356,69 +356,69 @@ When the optional argument DEEP is non-nil, this recursively clones the
 subtree under the specified node; if false, clone only the node itself
 \(and its attributes, if it has any)."
   ;; We don't want to call this recursively because of performance.
-  (let* ((first-copy (copy-dom-node node))
+  (let* ((first-copy (copy-doom-node node))
 	 (copy first-copy)
 	 stack)
     ;; unlink neighbours of the first copy
-    (setf (dom-node-parent-node first-copy) nil)
+    (setf (doom-node-parent-node first-copy) nil)
     (while copy
       ;; prevent sharing of text in text nodes
-      (let ((value (dom-node-value copy)))
+      (let ((value (doom-node-value copy)))
 	(when (and value (sequencep value))
-	  (setf (dom-node-value copy) (copy-sequence value))))
+	  (setf (doom-node-value copy) (copy-sequence value))))
       ;; copy attributes, and prevent sharing of text in attribute nodes
-      (let ((attributes (mapcar 'copy-dom-node (dom-node-attributes copy))))
+      (let ((attributes (mapcar 'copy-doom-node (doom-node-attributes copy))))
 	(mapc (lambda (attr)
-		(let ((value (dom-node-value attr)))
+		(let ((value (doom-node-value attr)))
 		  (when (and value (sequencep value))
-		    (setf (dom-node-value attr) (copy-sequence value)))))
+		    (setf (doom-node-value attr) (copy-sequence value)))))
 	      attributes)
-	(setf (dom-node-attributes copy) attributes))
+	(setf (doom-node-attributes copy) attributes))
       (if (not deep)
 	  ;; if this is not a deep copy, we are done
 	  (setq copy nil)
 	;; first clone all children
-	(let ((children (mapcar 'copy-dom-node (dom-node-child-nodes copy)))
+	(let ((children (mapcar 'copy-doom-node (doom-node-child-nodes copy)))
 	      (parent copy))
 	  (when children
 	    ;; set the children info for the parent
-	    (setf (dom-node-child-nodes parent) children)
+	    (setf (doom-node-child-nodes parent) children)
 	    ;; set parent for all children
 	    (mapc (lambda (child)
-		    (setf (dom-node-parent-node child) parent))
+		    (setf (doom-node-parent-node child) parent))
 		  children)))
 	;; move to the next copy, depth first, storing missed branches
 	;; on the stack -- note that "node" continues to refer to the
 	;; original node, it should not be used within the while copy
 	;; loop!
 	(setq copy
-	      (cond ((dom-element-first-child copy)
-		     (when (dom-element-next-sibling copy)
-		       (push (dom-element-next-sibling copy) stack))
-		     (dom-element-first-child copy))
-		    ((dom-element-next-sibling copy))
+	      (cond ((doom-element-first-child copy)
+		     (when (doom-element-next-sibling copy)
+		       (push (doom-element-next-sibling copy) stack))
+		     (doom-element-first-child copy))
+		    ((doom-element-next-sibling copy))
 		    (t (pop stack))))))
     first-copy))
-(dom-node-defun 'dom-node-clone-node)
+(doom-node-defun 'doom-node-clone-node)
 
 ;; hasAttributes introduced in DOM Level 2
 
 ;; Returns whether this node (if it is an element) has any
 ;; attributes.
 
-(defun dom-node-has-attributes (node)
+(defun doom-node-has-attributes (node)
   "Return t when NODE has any attributes."
-  (not (null (dom-node-attributes node))))
-(dom-node-defun 'dom-node-has-attributes)
+  (not (null (doom-node-attributes node))))
+(doom-node-defun 'doom-node-has-attributes)
 
 ;; hasChildNodes
 
 ;; Returns whether this node has any children.
 
-(defun dom-node-has-child-nodes (node)
+(defun doom-node-has-child-nodes (node)
   "Return t when NODE has any child nodes."
-  (not (null (dom-node-child-nodes node))))
-(dom-node-defun 'dom-node-has-child-nodes)
+  (not (null (doom-node-child-nodes node))))
+(doom-node-defun 'doom-node-has-child-nodes)
 
 ;; insertBefore
 
@@ -429,7 +429,7 @@ subtree under the specified node; if false, clone only the node itself
 ;; are inserted, in the same order, before refChild. If the newChild is
 ;; already in the tree, it is first removed.
 
-(defun dom-node-insert-before (node new-child &optional ref-child)
+(defun doom-node-insert-before (node new-child &optional ref-child)
   "Insert NEW-CHILD before NODE's existing child REF-CHILD.
 If optional argument REF-CHILD is nil or not given, insert NEW-CHILD at
 the end of the list of NODE's children.
@@ -438,18 +438,18 @@ NEW-CHILD will be removed from anywhere in the document!
 Return the node added."
   ;; without ref-child, append it at the end of the list
   (if (not ref-child)
-      (dom-node-append-child node new-child)
-    (dom-node-test-new-child node new-child)
-    (dom-node-unlink-child-from-parent new-child)
+      (doom-node-append-child node new-child)
+    (doom-node-test-new-child node new-child)
+    (doom-node-unlink-child-from-parent new-child)
     ;; find the correct position and insert new-child
-    (let ((children (dom-node-child-nodes node))
+    (let ((children (doom-node-child-nodes node))
 	  child-cell done)
       (while (and (not done) children)
 	(if (eq ref-child (car children))
 	    (progn
 	      ;; if the first child is ref-child, set the list anew
 	      (if (not child-cell)
-		  (setf (dom-node-child-nodes node)
+		  (setf (doom-node-child-nodes node)
 			(cons new-child children))
 		;; else splice new-child into the list
 		(setcdr child-cell (cons new-child children)))
@@ -458,26 +458,26 @@ Return the node added."
 	  (setq child-cell children
 		children (cdr children))))
       (unless done
-	(dom-exception 'dom-not-found-err)))
+	(doom-exception 'doom-not-found-err)))
     new-child))
-(dom-node-defun 'dom-node-insert-before)
+(doom-node-defun 'doom-node-insert-before)
 
 ;; removeChild
 
 ;; Removes the child node indicated by oldChild from the list of
 ;; children, and returns it.
 
-(defun dom-node-remove-child (node old-child)
+(defun doom-node-remove-child (node old-child)
   "Remove OLD-CHILD from the list of NODE's children and return it.
-This is very similar to `dom-node-unlink-child-from-parent' but it will
+This is very similar to `doom-node-unlink-child-from-parent' but it will
 raise an exception if OLD-CHILD is NODE's child."
-  (let ((children (dom-node-child-nodes node)))
+  (let ((children (doom-node-child-nodes node)))
     (if (memq old-child children)
-	(setf (dom-node-child-nodes node) (delq old-child children)
-	      (dom-node-parent-node old-child) nil)
-      (dom-exception 'dom-not-found-err))
+	(setf (doom-node-child-nodes node) (delq old-child children)
+	      (doom-node-parent-node old-child) nil)
+      (doom-exception 'doom-not-found-err))
     old-child))
-(dom-node-defun 'dom-node-remove-child)
+(doom-node-defun 'doom-node-remove-child)
 
 ;; replaceChild
 
@@ -490,22 +490,22 @@ raise an exception if OLD-CHILD is NODE's child."
 
 ;; If the newChild is already in the tree, it is first removed.
 
-(defun dom-node-replace-child (node new-child old-child)
+(defun doom-node-replace-child (node new-child old-child)
   "Replace OLD-CHILD with NEW-CHILD in the list NODE's children.
 Return OLD-CHILD."
-  (dom-node-test-new-child node new-child)
-  (dom-node-unlink-child-from-parent new-child)
-  (let ((children (dom-node-child-nodes node)))
+  (doom-node-test-new-child node new-child)
+  (doom-node-unlink-child-from-parent new-child)
+  (let ((children (doom-node-child-nodes node)))
     (unless (memq old-child children)
-      (dom-exception 'dom-not-found-err))
-    (setf (dom-node-child-nodes node)
+      (doom-exception 'doom-not-found-err))
+    (setf (doom-node-child-nodes node)
 	  (cl-nsubstitute new-child old-child children)))
   ;; set parent of new-child and old-child
-  (setf (dom-node-parent-node old-child) nil
-	(dom-node-parent-node new-child) node))
-(dom-node-defun 'dom-node-replace-child)
+  (setf (doom-node-parent-node old-child) nil
+	(doom-node-parent-node new-child) node))
+(doom-node-defun 'doom-node-replace-child)
 
-;; textContent of type DOMString, introduced in DOM Level 3
+;; textContent of type DOOMString, introduced in DOM Level 3
 
 ;; This attribute returns the text content of this node and its
 ;; descendants.
@@ -518,73 +518,73 @@ Return OLD-CHILD."
 ;; not contain any markup. Similarly, on setting, no parsing is
 ;; performed either, the input string is taken as pure textual content.
 
-(defun dom-node-text-content (node)
+(defun doom-node-text-content (node)
   "Return the text content of NODE and its children.
 If NODE is an attribute or a text node, its value is returned."
-  (if (or (dom-attr-p node)
-	  (dom-text-p node))
-      (dom-node-value node)
+  (if (or (doom-attr-p node)
+	  (doom-text-p node))
+      (doom-node-value node)
     (apply 'concat
-	   (mapcar 'dom-node-value
-		   (dom-element-get-elements-by-tag-name
-		    node dom-text-node-name)))))
-(dom-node-defun 'dom-node-text-content)
+	   (mapcar 'doom-node-value
+		   (doom-element-get-elements-by-tag-name
+		    node doom-text-node-name)))))
+(doom-node-defun 'doom-node-text-content)
 
-(defun dom-node-set-text-content (node data)
+(defun doom-node-set-text-content (node data)
   "Set the text content of NODE, replacing all its children.
 If NODE is an attribute or a text node, its value is set."
-  (if (or (dom-attr-p node)
-	  (dom-text-p node))
-      (setf (dom-node-value node) data)
-    (setf (dom-node-child-nodes node)
-	  (list (dom-document-create-text-node
-		 (dom-node-owner-document node)
+  (if (or (doom-attr-p node)
+	  (doom-text-p node))
+      (setf (doom-node-value node) data)
+    (setf (doom-node-child-nodes node)
+	  (list (doom-document-create-text-node
+		 (doom-node-owner-document node)
 		 data)))))
-(dom-node-defun 'dom-node-set-text-content)
+(doom-node-defun 'doom-node-set-text-content)
 
-(defsetf dom-node-text-content dom-node-set-text-content)
+(defsetf doom-node-text-content doom-node-set-text-content)
 
 ;;; Utility functions
 
 ;; These utility functions are defined for nodes only.
 
-(defun dom-node-ancestor-p (node ancestor)
+(defun doom-node-ancestor-p (node ancestor)
   "Return t if ANCESTOR is an ancestor of NODE in the tree."
-  (let ((parent (dom-node-parent-node node))
+  (let ((parent (doom-node-parent-node node))
 	result)
     (while (and (not result) parent)
       (setq result (eq parent ancestor)
-	    parent (dom-node-parent-node parent)))
+	    parent (doom-node-parent-node parent)))
     result))
 
-(defun dom-node-valid-child (node child)
+(defun doom-node-valid-child (node child)
   "Return t if CHILD is a valid child for NODE.
 This depends on the node-type of NODE and CHILD."
   ;; FIXME: Add stuff as we go along.
   t)
 
-(defun dom-node-test-new-child (node new-child)
+(defun doom-node-test-new-child (node new-child)
   "Check wether NEW-CHILD is acceptable addition to NODE's children."
-  (when (or (dom-node-ancestor-p node new-child)
+  (when (or (doom-node-ancestor-p node new-child)
 	    (eq new-child node)
-	    (not (dom-node-valid-child node new-child)))
-    (dom-exception 'dom-hierarchy-request-err))
-  (when (not (eq (dom-node-owner-document node)
-		 (dom-node-owner-document new-child)))
-    (dom-exception 'dom-wrong-document-err))
+	    (not (doom-node-valid-child node new-child)))
+    (doom-exception 'doom-hierarchy-request-err))
+  (when (not (eq (doom-node-owner-document node)
+		 (doom-node-owner-document new-child)))
+    (doom-exception 'doom-wrong-document-err))
   new-child)
 
-(defun dom-node-unlink-child-from-parent (node)
+(defun doom-node-unlink-child-from-parent (node)
   "Unlink NODE from is previous location.
-This is very similar to `dom-node-remove-child' but it will check wether
+This is very similar to `doom-node-remove-child' but it will check wether
 this node is the child of a particular other node."
   ;; remove node from it's old position
-  (let ((parent (dom-node-parent-node node)))
+  (let ((parent (doom-node-parent-node node)))
     (when parent
       ;; remove from parent's child-nodes and set own parent to nil
-      (setf (dom-node-child-nodes parent)
-	    (delq node (dom-node-child-nodes parent))
-	    (dom-node-parent-node node)
+      (setf (doom-node-child-nodes parent)
+	    (delq node (doom-node-child-nodes parent))
+	    (doom-node-parent-node node)
 	    nil)))
   node)
 
@@ -599,9 +599,9 @@ this node is the child of a particular other node."
 
 ;; This provides alternate names for plain lisp list accessor functions.
 
-(defalias 'dom-node-list-length 'length)
+(defalias 'doom-node-list-length 'length)
 
-(defun dom-node-list-item (list index); for the sake of argument order
+(defun doom-node-list-item (list index); for the sake of argument order
   "Return element at INDEX in LIST.
 Equivalent to (nth INDEX NODE)."
   (nth index list))
@@ -664,32 +664,32 @@ Equivalent to (nth INDEX NODE)."
 ;; directly access an attribute value can safely be used as a
 ;; convenience.
 
-(defun dom-element-get-elements-by-tag-name-1 (element name)
+(defun doom-element-get-elements-by-tag-name-1 (element name)
   "Return a list of elements with tag NAME.
 The elements are ELEMENT, its siblings, and their descendants.
-This is used by `dom-element-get-elements-by-tag-name' and
-`dom-document-get-elements-by-tag-name'."
+This is used by `doom-element-get-elements-by-tag-name' and
+`doom-document-get-elements-by-tag-name'."
   ;; We don't want to call this recursively because of performance.
   (let (stack result)
     (while element
       (when (or (string= name "*")
-		(string= name (dom-node-name element)))
+		(string= name (doom-node-name element)))
 	(setq result (cons element result)))
       (setq element
-	    (cond ((dom-node-first-child element)
-		   (when (dom-node-next-sibling element)
-		     (push (dom-node-next-sibling element) stack))
-		   (dom-node-first-child element))
-		  ((dom-node-next-sibling element))
+	    (cond ((doom-node-first-child element)
+		   (when (doom-node-next-sibling element)
+		     (push (doom-node-next-sibling element) stack))
+		   (doom-node-first-child element))
+		  ((doom-node-next-sibling element))
 		  (t (pop stack)))))
     (nreverse result)))
 
-(defun dom-element-get-elements-by-tag-name (element name)
+(defun doom-element-get-elements-by-tag-name (element name)
   "Return a list of all descendant of ELEMENT with tag NAME.
 The elements are returned in the order in which they are encountered in
 a preorder traversal of this element tree."
-  (dom-element-get-elements-by-tag-name-1
-   (dom-element-first-child element)
+  (doom-element-get-elements-by-tag-name-1
+   (doom-element-first-child element)
    name))
 
 ;; Interface Text
@@ -718,85 +718,85 @@ a preorder traversal of this element tree."
 ;;; Converting XML to DOM
 
 ;; Converting XML (hierarchy of nodes, simple lists, symbols and
-;; strings) to DOM (hierarchy of dom-nodes, cl-defstructs from CL)
+;; strings) to DOM (hierarchy of doom-nodes, cl-defstructs from CL)
 
-(defun dom-make-attribute-from-xml (attribute element doc)
+(defun doom-make-attribute-from-xml (attribute element doc)
   "Make a DOM node of attributes based on ATTRIBUTE.
-Called from `dom-make-element-from-xml'.
+Called from `doom-make-element-from-xml'.
 ELEMENT is the owner-element.
 DOC is the owner-document."
   (let* ((name (car attribute))
 	 (value (cdr attribute))
-	 (attr (dom-document-create-attribute doc name)))
-    (setf (dom-attr-value attr) value
-	  (dom-attr-owner-element attr) element)
+	 (attr (doom-document-create-attribute doc name)))
+    (setf (doom-attr-value attr) value
+	  (doom-attr-owner-element attr) element)
     attr))
 
-(defun dom-add-children (parent children)
+(defun doom-add-children (parent children)
   "Add CHILDREN to PARENT.
 CHILDREN is a list of XML NODE elements.  Each must
-be converted to a dom-node first."
+be converted to a doom-node first."
   (when children
-    (setf (dom-node-child-nodes parent)
+    (setf (doom-node-child-nodes parent)
 	  (mapcar (lambda (child)
-		    (dom-make-node-from-xml
+		    (doom-make-node-from-xml
 		     child
-		     (dom-node-owner-document parent)))
+		     (doom-node-owner-document parent)))
 		  children))
     (mapc (lambda (child)
-	    (setf (dom-node-parent-node child)
+	    (setf (doom-node-parent-node child)
 		  parent))
-	  (dom-node-child-nodes parent))))
+	  (doom-node-child-nodes parent))))
 
-(defun dom-make-element-from-xml (node owner)
+(defun doom-make-element-from-xml (node owner)
   "Make a DOM element based on NODE.
-Called from `dom-make-node-from-xml'.
-The atttributes are created by `dom-make-attribute-from-xml'.
+Called from `doom-make-node-from-xml'.
+The atttributes are created by `doom-make-attribute-from-xml'.
 OWNER is stored as the owner-document."
   (let* ((children (xml-node-children node))
 	 (attributes (xml-node-attributes node))
 	 (type (xml-node-name node))
-	 (element (dom-document-create-element owner type)))
+	 (element (doom-document-create-element owner type)))
     (when attributes
-      (setf (dom-node-attributes element)
+      (setf (doom-node-attributes element)
 	    (mapcar (lambda (attribute)
-		      (dom-make-attribute-from-xml attribute element owner))
+		      (doom-make-attribute-from-xml attribute element owner))
 		    attributes)))
     (when children
-      (dom-add-children element children))
+      (doom-add-children element children))
     element))
 
-(defun dom-make-node-from-xml (node owner)
+(defun doom-make-node-from-xml (node owner)
   "Make a DOM node based on NODE.
-If NODE is a list, the node is created by `dom-make-element-from-xml'.
+If NODE is a list, the node is created by `doom-make-element-from-xml'.
 OWNER is stored as the owner-document."
   (cond ((stringp node)
-	 (dom-document-create-text-node owner node))
+	 (doom-document-create-text-node owner node))
 	((listp node)
-	 (dom-make-element-from-xml node owner))
+	 (doom-make-element-from-xml node owner))
 	(t
 	 (error "Illegal node: %S" node))))
 
-(defun dom-make-document-from-xml (node)
+(defun doom-make-document-from-xml (node)
   "Return a DOM document based on NODE.
 NODE is a node as returned by `libxml-parse-xml-region'.  
-The DOM nodes are created using `dom-make-node-from-xml'.
+The DOM nodes are created using `doom-make-node-from-xml'.
 
 Example:
-       (let ((doc (dom-make-document-from-xml 
+       (let ((doc (doom-make-document-from-xml 
                   (with-temp-buffer
   		    (insert-file-contents \"sample.xml\")
   		    (libxml-parse-xml-region 
                       (point-min) (point-max)))))))
 "
-  (let* ((doc (make-dom-document
-	       :name dom-document-node-name
-	       :type dom-document-node))
-	 (node (dom-make-node-from-xml node doc)))
-    (setf (dom-document-owner-document doc) doc; required in dom-add-children
-	  (dom-document-element doc) node)
+  (let* ((doc (make-doom-document
+	       :name doom-document-node-name
+	       :type doom-document-node))
+	 (node (doom-make-node-from-xml node doc)))
+    (setf (doom-document-owner-document doc) doc; required in doom-add-children
+	  (doom-document-element doc) node)
     doc))
 
-(provide 'dom)
+(provide 'doom)
 
-;;; dom.el ends here.
+;;; doom.el ends here.

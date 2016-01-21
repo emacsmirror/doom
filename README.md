@@ -1,6 +1,9 @@
-# dom.el #
+# doom.el #
 
-Pure emacs-lisp DOM manipulation at its finest
+Pure emacs-lisp DOM manipulation at its finest.
+
+Because Emacs now contains a library named `dom.el`.  This library had
+to be renamed from `dom.el` to `doom.el`.
 
 Credit Where It's Due:
 ----------------------
@@ -14,22 +17,22 @@ Overview
 --------
 
 If you are working with XML documents, the parsed data structure
-returned by the XML parser (xml.el) may be enough for you: Lists of
+returned by the XML parser (`xml.el`) may be enough for you: Lists of
 lists, symbols, strings, plus a number of accessor functions.
 
 If you want a more elaborate data structure to work with your XML
 document, you can create a document object model (DOM) from the XML
-data structure using dom.el.
+data structure using `doom.el`.
 
-You can create a DOM from XML using `dom-make-document-from-xml`
+You can create a DOM from XML using `doom-make-document-from-xml`
 with the input from `libxml-parse-xml-region`. See function documentation
 below for an example
 
 ### On Interfaces and Classes ###
 
-This elisp DOM implementation uses the dom-node structure to store all
+This elisp DOM implementation uses the doom-node structure to store all
 attributes. The various interfaces consist of sets of functions to
-manipulate these dom-nodes. The functions of a certain interface
+manipulate these doom-nodes. The functions of a certain interface
 share the same prefix.
 
 
@@ -46,10 +49,10 @@ become unstable). In general, DOM methods return specific error
 values in ordinary processing situations, such as out-of-bound errors
 when using a list of nodes.
 
-##### `(dom-exception EXCEPTION &rest DATA)` ####
+##### `(doom-exception EXCEPTION &rest DATA)` ####
 
 Signal error EXCEPTION, possibly providing DATA.
-The error signaled has the condition 'dom-exception in addition
+The error signaled has the condition 'doom-exception in addition
 to the catch-all 'error and EXCEPTION itself.
 
 ### Document Interface ###
@@ -66,36 +69,36 @@ them with the Document within whose context they were created.
 
 It should also be noted that the Document interface has accessors
 directly derived from the Node interface, only with the prefix
-`dom-document` instead of `dom node`. There is also an added field
+`doom-document` instead of `dom node`. There is also an added field
 `element` which denotes the root element of the document.
 
 #### Constructor
 
-##### `(dom-make-document-from-xml NODE)` ####
+##### `(doom-make-document-from-xml NODE)` ####
 
 Return a DOM document based on NODE.
 NODE is a node as returned by `libxml-parse-xml-region`.
-The DOM nodes are created using `dom-make-node-from-xml`.
+The DOM nodes are created using `doom-make-node-from-xml`.
 
 Example:
 ```elisp
-(let ((doc (dom-make-document-from-xml 
+(let ((doc (doom-make-document-from-xml 
            (with-temp-buffer
              (insert-file-contents "sample.xml")
              (libxml-parse-xml-region 
                (point-min) (point-max))))))
-   (some-dom-thing-here doc))
+   (some-doom-thing-here doc))
 ```
 
 ### Other Document functions
 
-##### `(dom-document-create-attribute DOC NAME)` ####
+##### `(doom-document-create-attribute DOC NAME)` ####
 
 Create an attribute of the given NAME.
 DOC is the owner-document. Note that the Attr instance can
 then be set on an Element using the setAttributeNode method.
 
-##### `(dom-document-create-element DOC TYPE)` ####
+##### `(doom-document-create-element DOC TYPE)` ####
 
 Create an element of the given TYPE.
 TYPE will be interned, if it is a string.
@@ -105,12 +108,12 @@ Note that the instance
 returned implements the Element interface, so attributes can be
 specified directly on the returned object.
 
-##### `(dom-document-create-text-node DOC DATA)` ####
+##### `(doom-document-create-text-node DOC DATA)` ####
 
 Create a text element containing DATA.
 DOC is the owner-document.
 
-##### `(dom-document-get-elements-by-tag-name DOC TAGNAME)` ####
+##### `(doom-document-get-elements-by-tag-name DOC TAGNAME)` ####
 
 Return a list of all the elements with the given tagname.
 The elements are returned in the order in which they are encountered in
@@ -140,55 +143,55 @@ elements, and attributes as well.
 
 #### Constructor
 
-##### `(dom-make-node-from-xml NODE OWNER)` ####
+##### `(doom-make-node-from-xml NODE OWNER)` ####
 
 Make a DOM node based on NODE.
-If NODE is a list, the node is created by `dom-make-element-from-xml`.
+If NODE is a list, the node is created by `doom-make-element-from-xml`.
 OWNER is stored as the owner-document.
 
 #### Accessors
 
-##### `(dom-node-name NODE)`
+##### `(doom-node-name NODE)`
 
-##### `(dom-node-value NODE)`
+##### `(doom-node-value NODE)`
 
-##### `(dom-node-type NODE)`
+##### `(doom-node-type NODE)`
 
-##### `(dom-node-parent-nodes NODE)`
+##### `(doom-node-parent-nodes NODE)`
 
-##### `(dom-node-child-nodes NODE)`
+##### `(doom-node-child-nodes NODE)`
 
-##### `(dom-node-attributes NODE)`
+##### `(doom-node-attributes NODE)`
 
-##### `(dom-node-owner-document NODE)`
+##### `(doom-node-owner-document NODE)`
 
 
 #### Additional traversal functions
 
-##### `(dom-node-first-child NODE)`
+##### `(doom-node-first-child NODE)`
 
-##### `(dom-node-last-child NODE)`
+##### `(doom-node-last-child NODE)`
 
-##### `(dom-node-previous-sibling NODE)`
+##### `(doom-node-previous-sibling NODE)`
 
-##### `(dom-node-next-sibling NODE)`
+##### `(doom-node-next-sibling NODE)`
 
 #### Functions acting on the child nodes list
 
-##### `(dom-add-children PARENT CHILDREN)` ####
+##### `(doom-add-children PARENT CHILDREN)` ####
 
 Add CHILDREN to PARENT.
 CHILDREN is a list of XML NODE elements.  Each must
-be converted to a dom-node first.
+be converted to a doom-node first.
 
-##### `(dom-node-append-child NODE NEW-CHILD)` ####
+##### `(doom-node-append-child NODE NEW-CHILD)` ####
 
 Adds NEW-CHILD to the end of the list of children of NODE.
 If NEW-CHILD is already in the document tree, it is first removed.
 NEW-CHILD will be removed from anywhere in the document!
 Return the node added.
 
-##### `(dom-node-clone-node NODE &optional DEEP)` ####
+##### `(doom-node-clone-node NODE &optional DEEP)` ####
 
 Return a duplicate of NODE.
 The duplicate node has no parent.  Cloning will copy all attributes and
@@ -199,15 +202,15 @@ When the optional argument DEEP is non-nil, this recursively clones the
 subtree under the specified node; if false, clone only the node itself
 (and its attributes, if it has any).
 
-##### `(dom-node-has-attributes NODE)` ####
+##### `(doom-node-has-attributes NODE)` ####
 
 Return t when NODE has any attributes.
 
-##### `(dom-node-has-child-nodes NODE)` ####
+##### `(doom-node-has-child-nodes NODE)` ####
 
 Return t when NODE has any child nodes.
 
-##### `(dom-node-insert-before NODE NEW-CHILD &optional REF-CHILD)` ####
+##### `(doom-node-insert-before NODE NEW-CHILD &optional REF-CHILD)` ####
 
 Insert NEW-CHILD before NODE's existing child REF-CHILD.
 If optional argument REF-CHILD is nil or not given, insert NEW-CHILD at
@@ -216,70 +219,70 @@ If NEW-CHILD is already in the document tree, it is first removed.
 NEW-CHILD will be removed from anywhere in the document!
 Return the node added.
 
-##### `(dom-node-remove-child NODE OLD-CHILD)` ####
+##### `(doom-node-remove-child NODE OLD-CHILD)` ####
 
 Remove OLD-CHILD from the list of NODE's children and return it.
-This is very similar to `dom-node-unlink-child-from-parent` but it will
+This is very similar to `doom-node-unlink-child-from-parent` but it will
 raise an exception if OLD-CHILD is NODE's child.
 
-##### `(dom-node-replace-child NODE NEW-CHILD OLD-CHILD)` ####
+##### `(doom-node-replace-child NODE NEW-CHILD OLD-CHILD)` ####
 
 Replace OLD-CHILD with NEW-CHILD in the list NODE's children.
 Return OLD-CHILD.
 
-##### `(dom-node-text-content NODE)` ####
+##### `(doom-node-text-content NODE)` ####
 
 Return the text content of NODE and its children.
 If NODE is an attribute or a text node, its value is returned.
 
-##### `(dom-node-set-text-content NODE DATA)` ####
+##### `(doom-node-set-text-content NODE DATA)` ####
 
 Set the text content of NODE, replacing all its children.
 If NODE is an attribute or a text node, its value is set.
 
-##### `(dom-node-ancestor-p NODE ANCESTOR)` ####
+##### `(doom-node-ancestor-p NODE ANCESTOR)` ####
 
 Return t if ANCESTOR is an ancestor of NODE in the tree.
 
-##### `(dom-node-valid-child NODE CHILD)` ####
+##### `(doom-node-valid-child NODE CHILD)` ####
 
 Return t if CHILD is a valid child for NODE.
 This depends on the node-type of NODE and CHILD.
 
-##### `(dom-node-test-new-child NODE NEW-CHILD)` ####
+##### `(doom-node-test-new-child NODE NEW-CHILD)` ####
 
 Check wether NEW-CHILD is acceptable addition to NODE's children.
 
-##### `(dom-node-unlink-child-from-parent NODE)` ####
+##### `(doom-node-unlink-child-from-parent NODE)` ####
 
 Unlink NODE from is previous location.
-This is very similar to `dom-node-remove-child` but it will check wether
+This is very similar to `doom-node-remove-child` but it will check wether
 this node is the child of a particular other node.
 
-##### `(dom-node-list-item LIST INDEX)` ####
+##### `(doom-node-list-item LIST INDEX)` ####
 
 Return element at INDEX in LIST.
 Equivalent to (nth INDEX NODE).
 
 ### Elements
 
-##### `(dom-make-element-from-xml NODE OWNER)` ####
+##### `(doom-make-element-from-xml NODE OWNER)` ####
 
 Make a DOM element based on NODE.
-Called from `dom-make-node-from-xml`.
-The atttributes are created by `dom-make-attribute-from-xml`.
+Called from `doom-make-node-from-xml`.
+The atttributes are created by `doom-make-attribute-from-xml`.
 OWNER is stored as the owner-document.
 
-##### `(dom-element-get-elements-by-tag-name ELEMENT NAME)` ####
+##### `(doom-element-get-elements-by-tag-name ELEMENT NAME)` ####
 
 Return a list of all descendant of ELEMENT with tag NAME.
 The elements are returned in the order in which they are encountered in
 a preorder traversal of this element tree.
 
-##### `(dom-make-attribute-from-xml ATTRIBUTE ELEMENT DOC)` ####
+##### `(doom-make-attribute-from-xml ATTRIBUTE ELEMENT DOC)` ####
 
 Make a DOM node of attributes based on ATTRIBUTE.
-Called from `dom-make-element-from-xml`.
+Called from `doom-make-element-from-xml`.
 ELEMENT is the owner-element.
 DOC is the owner-document.
 
