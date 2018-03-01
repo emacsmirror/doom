@@ -5,14 +5,6 @@ Pure emacs-lisp DOM manipulation at its finest.
 Because Emacs now contains a library named `dom.el`.  This library had
 to be renamed from `dom.el` to `doom.el`.
 
-Credit Where It's Due:
-----------------------
-
-This code was originally developed by Alex Schroder and then improved
-by Henrik Motakef. So far, the only thing I have done is
-update it to the bare-minimum working requirements for
-this decade's version of Emacs.
-
 Overview
 --------
 
